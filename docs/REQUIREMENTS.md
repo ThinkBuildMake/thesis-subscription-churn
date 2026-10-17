@@ -100,10 +100,11 @@ If a row below names a library, a component, or a way of meeting a threshold, it
 | GC-3 | One person builds and maintains the system [src U§8]. Every Gate and Must row can be checked by that person with scripts or tests, without a second party. Human approval flows (AZ-1) are tested with a stand-in approver. | Review of Verified-by columns: 0 rows need a second person | U§8 | Must |
 | GC-4 | Spend on services outside the approved list is $0 [src U§8]; anything outside the list uses a free tier only. | Billing and usage review of every service in the dependency inventory | U§8 | Must |
 | GC-5 | Every external service is on the approved list (Anthropic, Aqua Voice, Cohere, Cursor, DigitalOcean, ElevenLabs, Google One, Midjourney, OpenAI, OpenRouter, Railway, Vultr, Whisper) or is a free tier of another service, plus Snowflake [src U§8]. | Service inventory: 100% of services classified | U§8 | Must |
-| GC-6 | The code is Python and SQL, uses an LLM API from Anthropic or OpenAI, runs agent orchestration, and uses Snowflake as the data platform [src P]. | Repository and dependency inspection | P | Must |
+| GC-6 | The code is Python and SQL, uses an LLM API from Anthropic or OpenAI, runs agent orchestration, and trains and uses a predictive churn model (scikit-learn or equivalent) [src P]. Snowflake is the data platform. | Repository and dependency inspection | P | Must |
 | GC-7 | All data is read from the existing Snowflake views (subscriptions, orders, email engagement, support, quiz) [src P]. 0 reads from the Shopify, Klaviyo or Zendesk APIs. | Search of the code for those hosts in read paths, plus a run with those hosts blocked at the network | P, U§7 | Must |
 | GC-8 | Risk scores, the action audit trail and outcomes are written to Snowflake: 3 sets of results, each queryable from a saved Metabase question [src P]. | Run the pipeline, then execute each Metabase question: 3 of 3 return rows | P, U§8 | Must |
 | GC-9 | Moving from demo data to real data needs 0 code changes, only configuration [src U§8]. | Switch the data source in a staging environment and run; `git diff` is empty | U§8 | Must |
+| GC-10 | The PRD lists Git, Docker, FastAPI, the Snowflake connector (or Snowpark) and pytest as dev tools [src P]. They are the default choices; any deviation is recorded in the stack doc with its reason. | Stack doc review: every deviation has a reason | P | Should |
 
 ### 1.2 Dependencies and environment (DE-)
 
@@ -263,6 +264,7 @@ If a row below names a library, a component, or a way of meeting a threshold, it
 | OB-3 | An audit record is visible in Snowflake within 15 minutes of dispatch [prop]. | Time the interval in a test run | GC-8 | Should |
 | OB-4 | Each run records counts for scored, at-risk, dispatched, autonomous, pending, rejected, lapsed, failed and no-action. The counts reconcile with the audit table with a difference of 0. | Compare the run summary with `COUNT` queries | EV-3, EV-4 | Must |
 | OB-5 | Every metric the PRD names (precision, recall, coverage, autonomous rate, churn reduction) can be computed for each of the 4 archetypes from logged data alone, with 0 extra instrumentation. | A SQL query returns all four archetypes for each metric | EV-6; builder request | Must |
+| OB-6 | Every run records the status and duration of each of the 6 pipeline stages [src P]: ingestion, feature engineering, risk scoring, intervention selection, action execution, outcome logging. 100% of runs have all 6. | Query the run table over 5 test runs | P | Must |
 
 ### 3.6 Compliance and data handling (CP-)
 
@@ -314,6 +316,7 @@ If a row below names a library, a component, or a way of meeting a threshold, it
 |---|---|---|---|---|
 | DP-1 | A clean deploy to an approved host (Railway, DigitalOcean or Vultr, GC-5) following only the Deployment Guide succeeds on the first try, in ≤ 1 hour [prop], and the test suite passes on a clean install. | Timed walk-through on a fresh environment | GC-2; P | Must |
 | DP-2 | The scheduled pipeline runs 3 consecutive times [prop] with 0 manual interventions. | Observe 3 runs from the scheduler | PF-2 | Should |
+| DP-3 | A Thesis engineer who has only the technical documentation can run the tests, run the pipeline and add a new intervention type in ≤ 1 working day [prop] [src P: maintainable from day one]. | Cold walk-through by someone who has not seen the code, using only the docs; a stand-in reader if needed (GC-3) | P | Must |
 
 ### 3.12 Extensibility (CH-)
 
@@ -322,7 +325,8 @@ If a row below names a library, a component, or a way of meeting a threshold, it
 | ID | Requirement | Verified by | Trace | Priority |
 |---|---|---|---|---|
 | CH-1 | Adding a fifth intervention type in a test change touches 0 files in the scoring code. | `git diff --stat` of a stub intervention | P | Should |
-| CH-2 | Scoring tests run with no LLM and no network; routing tests run with no Snowflake; dispatch tests run against a stub channel. 3 of 3 suites. | Run each suite with the dependency disabled | P | Should |
+| CH-2 | Prediction, agent and execution code are separate [src P]: 0 imports from the prediction code into the agent or execution code, and the reverse for execution into prediction. Scoring tests run with no LLM and no network; routing tests run with no Snowflake; dispatch tests run against a stub channel. 3 of 3 suites. | Import check plus running each suite with the dependency disabled | P | Should |
+| CH-3 | Adding a new data source (a sixth view) in a test change touches 0 files in the intervention execution code [src P: extensible to new data sources]. | `git diff --stat` of a stub source | P | Should |
 
 ---
 
@@ -381,6 +385,7 @@ Every **[prop]** and **[tbd]** number. Status is *proposed* until reviewed; afte
 | SC-2 | ≤ 2.2× time for 2× base | Allows 10% overhead on linear growth | proposed |
 | DP-1 | ≤ 1 hour | One person, clean install | proposed |
 | DP-2 | 3 runs | A week-long test is outside the build window | proposed |
+| DP-3 | ≤ 1 working day | A new engineer should reach a first change in a day | proposed |
 
 **Open items only a running system, an upstream fix or the builder can answer:**
 1. **Archetype labels.** Do cancellation reasons or survey tags exist in Snowflake? Without them VR-8 rests on hand labels (H).
