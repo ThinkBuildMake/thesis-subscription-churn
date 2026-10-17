@@ -378,7 +378,6 @@ Every **[prop]** and **[tbd]** number. Status is *proposed* until reviewed; afte
 | CP-3 | 0 direct identifiers in prompts | Prompts are logged and third-party | proposed |
 | CP-4 | [tbd] | Consent rule unknown | pending decision |
 | CT-1 | 5 bad configs | Covers the safety-relevant values | proposed |
-| CO-1 | LLM spend is uncapped in the build [src builder, 2026-10-17]: correctness first, cost optimization afterwards. 100% of runs record LLM calls, tokens and cost, so optimization can start from real figures. | Query the run table over 5 test runs: all 3 fields present | GC-4 | Should |
 | SC-2 | ≤ 2.2× time for 2× base | Allows 10% overhead on linear growth | proposed |
 | DP-1 | ≤ 1 hour | One person, clean install | proposed |
 | DP-2 | 3 runs | A week-long test is outside the build window | proposed |
