@@ -37,7 +37,7 @@ These were not stated by the builder or the brief and are left open: consistency
 - **Archetype labels:** does any ground truth for the four archetypes exist (cancellation reasons, survey tags)? Without labels, archetype classification can't be evaluated; this is the biggest unknown behind UC-1–4.
 - **Life-change signal (UC-4):** does support text or any field carry it? If not, UC-4 reduces to a generic human escalation.
 - **Efficacy and life-change shares:** no external source found; measure from Thesis data if available.
-- **Data access:** whether real Thesis data is reachable. If not, precision and recall are measured on synthetic data and prove little.
+- **Data access:** the PRD implies real Snowflake views, with tables confirmed at onboarding; if access fails, precision and recall are measured on synthetic data and prove little.
 - **Churn definition:** what counts as churn (cancel, skip streak, no order in N days) is not in the brief.
 - **Leading indicators:** no primary study confirms skips or engagement decline predict churn in consumable subscriptions; the model must test this.
 - **Actions available:** whether Klaviyo sends, offer creation and blend changes can be executed from the system, and in what form, is not stated.

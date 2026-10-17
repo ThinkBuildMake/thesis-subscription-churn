@@ -6,7 +6,7 @@
 
 **This document does not cover:** how the product is built, verified, measured or hosted. Requirements, key metrics, stack and architecture are separate documents that trace back to the use case IDs (UC-n) and the constraints here.
 
-**Status:** provisional draft, 2026-10-16. Source material is the partner brief (`docs/Thesis - Churn Project.docx`, R. Cattan, 2026-04-15) and `docs/Portal PRD.md`. No stakeholder is available, so nothing here was confirmed with Thesis. Claims not backed by the brief, a cited source, or the builder's own answers are marked *(assumption)*. Web sources came from a research pass and have not all been independently re-opened; see Section 9.
+**Status:** provisional draft, 2026-10-16. Source material is the partner brief (`docs/Thesis - Churn Project.docx`, R. Cattan, 2026-04-15) and `docs/Portal PRD.md`. No stakeholder is available, so nothing here was confirmed with Thesis. Claims not backed by the brief, a cited source, or the builder's own answers are marked *(assumption)*. The four load-bearing statistics [R1]–[R4] were re-opened and confirmed on 2026-10-17; the rest came from a research pass (Section 9).
 
 ---
 
@@ -26,12 +26,12 @@ Each source below is its own study and its numbers are not combined.
 
 ### Churn is a normal, constant loss
 
-Recurly's July 2026 network benchmark reports median annual churn of **4.25% for ecommerce**, split into **2.87% voluntary** and **1.38% involuntary** (failed payment) [R1]. Sample size and sampling are not stated, and the page's text and chart disagree on some rows. This says how much subscribers leave and that most of it is chosen, not that it is avoidable.
+Recurly's July 2026 network benchmark reports median annual churn of **4.25% for ecommerce**, split into **2.87% voluntary** and **1.38% involuntary** (failed payment) [R1]. Sample size and sampling are not stated. This says how much subscribers leave and that most of it is chosen, not that it is avoidable.
 
 ### Why people say they cancel (two separate consumer surveys)
 
-- A Closer Look, December 2024, n=1,091 US adults: cost **63%**, lack of usage or no longer needing it **57.8%**, dissatisfaction with content or service **15.4%** (multi-select) [R2].
-- PYMNTS and sticky.io, May 2022, n=1,919 US consumers: reducing expenses **65%**, no longer needed **29%**, received more than used **17%**, product quality declined **13%** [R3].
+- A Closer Look, December 2024, n=1,091 US adults: cost **63%**, lack of usage or no longer needing it **57.8%**, dissatisfaction with content or service **15.4%** [R2]. The reason shares add to about 158%, which suggests respondents could pick several, though the page doesn't say.
+- PYMNTS and sticky.io, May 2022, n=1,919 US consumers: reducing expenses **65%** (55% said it was the most important reason), no longer needed **29%**, received more than used **17%**, product quality declined **13%** [R3].
 
 These map to our archetypes as follows: price is well supported (UC-1); stockpile and fatigue is supported (UC-3); **no source gave a share for "it didn't work" (UC-2) or for life change (UC-4)**, so those two rest on the brief and on Thesis's own reviews. Both are stated reasons, not verified causes, and neither is supplement-specific.
 
@@ -41,7 +41,7 @@ Thesis has a 4.0 Trustpilot rating on 129 reviews. Recurring complaints are that
 
 ### Harm from getting the response wrong
 
-A randomized test on 65,000 customers of a wireless carrier found that proactively recommending a cheaper plan raised churn to **10%, against 6% for the control group** [R4]. It is a different industry and a different offer, but it is the strongest evidence found that a "helpful" retention message can cause the cancellation it was meant to prevent. It is the reason the product must choose its action by cause, not blast every at-risk subscriber with the same offer.
+A randomized test on 65,000 customers of a wireless carrier found that proactively recommending a cheaper plan raised churn to **10%, against 6% for the control group** (time window not stated) [R4]. It is a different industry and a different offer, but it is the strongest evidence found that a "helpful" retention message can cause the cancellation it was meant to prevent. It is the reason the product must choose its action by cause, not blast every at-risk subscriber with the same offer.
 
 ---
 
@@ -177,27 +177,27 @@ Across all four use cases, a subscriber with little data (no quiz, a short histo
 
 | Constraint | What it is | Given by |
 |---|---|---|
-| Timeline | Due Wednesday 2026-10-21, time zone and time of day not given *(assumed: the coming Wednesday)*. The brief says 3–5 days. Nothing was named as droppable first because "no cuts" | Builder; brief |
+| Timeline | Due Tuesday 2026-10-20, midnight Central (the builder said "CST"; read as end of day, 11:59 PM Central). The brief says 3–5 days. Nothing was named as droppable first because "no cuts" | Builder; brief |
 | Team | One person | Builder |
-| Spend | No budget for now. Anything outside the approved list may be used only on a free tier. Whether an existing credit covers API calls was not stated | Builder |
+| Spend | No budget for now. Anything outside the approved list may be used only on a free tier. Confirmed by the builder; whether existing credit covers LLM API calls was not stated | Builder |
 | Services / vendors | Approved whitelist the builder may choose from: Anthropic, Aqua Voice, Cohere, Cursor, DigitalOcean, ElevenLabs, Google One, Midjourney, OpenAI, OpenRouter, Railway, Vultr, Whisper. Free tiers of other services are also allowed. The brief requires Python, SQL, an LLM API (Anthropic Claude or OpenAI), Snowflake and agent orchestration | Builder; brief |
 | Hardware in hand | None bounding the first iteration | Builder |
 | Must integrate with | Snowflake views for subscriptions, orders, email engagement (Klaviyo sync), support (Zendesk sync) and quiz data; outputs must be queryable in Metabase | Brief |
 | Intended use | A demo product for Thesis's evaluation. The brief says it should be deployable to real data with minimal change | Builder; brief |
-| Data access | Not stated whether real Thesis data is available. If it isn't, scoring accuracy can only be demonstrated on synthetic data *(assumption)* | Open |
-| Regulatory / contractual | The brief's rule against raw PII in logs and training data. Email-consent rules were not specified in the brief or by the builder | Brief |
+| Data access | The PRD says all data comes from existing Snowflake production views and that the specific tables are reviewed during onboarding. Real access for this build is therefore assumed, not confirmed *(assumption)*; if it falls through, accuracy can only be shown on synthetic data | Brief |
+| Regulatory / contractual | The brief's rule against raw PII in logs and training data. The PRD and brief state no email-consent or unsubscribe rule, so none is given here; see the handoff | Brief |
 
 ---
 
 ## 9. Evidence limitations
 
-- **[R1] Recurly** gives annual medians with no sample size; the page's text and chart disagree on some rows. It shows how much subscribers leave, not that it is avoidable.
-- **[R2], [R3]** are stated reasons in consumer surveys (2024, 2022), both multi-select, neither supplement-specific. Different studies; not combined.
-- **[R4]** is one randomized field test in telecom (2016); it shows a mechanism, not that it applies here.
+- **[R1] Recurly** (re-opened 2026-10-17; figures confirmed) gives annual medians across its network with no sample size, and the page's text and chart disagree on some other rows (not ecommerce). It is annual and not comparable to a monthly churn target such as the brief's 2–3 points. It shows how much subscribers leave, not that it is avoidable.
+- **[R2]** (re-opened; figures confirmed) is a 2024 blog post summarizing a survey of 1,091 US adults. Recruitment, screening, fieldwork dates and question wording aren't stated. **[R3]** (re-opened; figures confirmed) is a 2022 survey of 1,919 US consumers whose page mixes "in March" and "over the last 12 months" for different reasons. Both are stated reasons, neither is supplement-specific, and they are different studies, not combined.
+- **[R4]** (re-opened; figures confirmed) is a trade-press account (2015) of a randomized field test at an unnamed South American wireless firm. The article gives no time window, group sizes or significance test, and I did not read the paper. It shows a mechanism, not that it applies here.
 - **[R5]** competitor pricing was read from pricing pages by a research pass; features not listed there may exist.
 - **[R7], [R8]** are self-selected reviews: anecdotal.
 - No source gave a share for the efficacy or life-change archetypes, and none tested skips or engagement decline as predictors in consumable subscriptions.
-- Some research-pass sources have not been re-opened by the author; vendor figures (e.g. Churnkey pause and discount shares) have no stated control group and are not used here.
+- [R5]–[R8] (competitor pricing, Thesis pages, reviews) come from the research pass and were not re-opened by the author. Vendor figures (e.g. Churnkey pause and discount shares) have no stated control group and are not used here.
 - None of these sources measures whether this product reduces churn.
 
 ---
