@@ -50,7 +50,6 @@ If a row below names a library, a component, or a way of meeting a threshold, it
 | Autonomous action | A dispatched action that needed no human approval. Escalation counts as autonomous: creating the case needs no approval (Key decision 2). |
 | Thin-data subscriber | One with no quiz responses, or fewer than 3 orders (USERS §1: cancelling is possible after the second order, so fewer than 3 orders means almost no history) **[prop]**. |
 | Pre-cancellation churn | A subscriber who cancels within the label horizon **[tbd: the churn definition is not in the brief; interim: cancels within 30 days of the score date [prop]]**. |
-| Holdout | A random share of at-risk subscribers deliberately given no intervention so that the effect of interventions can be measured (EV-5). |
 | Audit record | The Snowflake row written for each action (OB-2). |
 
 ---
@@ -66,7 +65,7 @@ If a row below names a library, a component, or a way of meeting a threshold, it
 | Reliability | Killed at any stage, a rerun produces 0 duplicate sends and 0 skipped subscribers (RL-1) |
 | Scale | Whole active base per run, every 7 days or sooner (PF-1, PF-2) |
 | Privacy | 0 raw PII in logs, training data or prompts (CP-1, CP-4) |
-| Measurement | 10% holdout so the 2–3 point churn target is measurable (EV-5) |
+| Measurement | Every action and its outcome is logged per archetype so churn reduction can be measured after go-live (EV-5) |
 | Given | Due Tue 2026-10-20 23:59 Central; one person; $0 outside the approved providers (GC-1, GC-3, GC-4) |
 
 ---
@@ -79,7 +78,7 @@ If a row below names a library, a component, or a way of meeting a threshold, it
 | 2 | Escalation counts as an autonomous action | Count it as approval-gated, which would make the 70% target unreachable if life-change cases are common | EV-4, FR-4 |
 | 3 | The must-nevers outrank the PRD's 70% autonomy target. If approval-gated actions leave less than 70% autonomous, the approval default is relaxed only where a must-never allows | Weaken a must-never to hit 70% | EV-4, VR-1 |
 | 4 | When the reason is ambiguous, no offer is sent; the subscriber gets a neutral check-in or a human | Default high-risk subscribers to a discount (the rule the brief forbids; the carrier test shows it can raise churn, U§2) | FR-5.2, VR-1 |
-| 5 | A random 10% holdout of at-risk subscribers gets no intervention | Compare churn before and after launch, which cannot separate the system from seasonality | EV-5, EV-3 |
+| 5 | No control group is built in v1; churn reduction is measured from logged actions and outcomes after go-live | Withhold interventions from a random share of at-risk subscribers (rejected by the builder: it only serves attribution, which the build window cannot show anyway) | EV-5 |
 | 6 | An action is logged durably before it is dispatched | Log after the send, which can silently lose records on a crash | RL-2 |
 | 7 | Default mode is dry-run; live sending needs an explicit config change | Live sending by default | DE-6 |
 | 8 | All four archetypes are measured and reported separately, with n shown, even when a group is small | Report one blended figure | EV-6, OB-5 |
@@ -288,9 +287,9 @@ If a row below names a library, a component, or a way of meeting a threshold, it
 |---|---|---|---|---|
 | EV-1 | Precision > 70% in the top risk decile [src P], on a time-split backtest (trained on data before a cut date, scored on churn after it), reported with n and a 95% confidence interval. | Backtest run; metric and CI in the report | P | Must |
 | EV-2 | Recall > 60% [src P] of pre-cancellation churners at the at-risk cutoff, on the same backtest and label definition as EV-1. | Same backtest | P | Must |
-| EV-3 | Coverage > 85% [src P]: dispatched or escalated actions ÷ at-risk subscribers in a run. Holdout subscribers and no-action decisions count in the denominator. | Run summary (OB-4) | P | Must |
+| EV-3 | Coverage > 85% [src P]: dispatched or escalated actions ÷ at-risk subscribers in a run. No-action decisions count in the denominator. | Run summary (OB-4) | P | Must |
 | EV-4 | Autonomous action rate > 70% [src P]: autonomous actions ÷ dispatched actions, with escalation counted as autonomous (Key decision 2). Reported separately by intervention type. | Run summary (OB-4) | P | Must |
-| EV-5 | Churn reduction of 2–3 percentage points per month within 90 days [src P] is measurable: a random 10% of at-risk subscribers [prop] form a holdout and receive nothing. At 10%, the 85% coverage in EV-3 still holds (the holdout is below the 15% margin). The measured reduction itself is **[tbd: needs 90 days of live data, which is outside the build window]**. | Randomness test of the assignment; confirm the holdout flag in the audit table | P, U§2 | Should |
+| EV-5 | Churn reduction of 2–3 percentage points per month within 90 days [src P] cannot be shown inside the build window **[tbd: needs 90 days of live data]**. What the build must provide: every action and its outcome logged per archetype (OB-2, OB-5), so the reduction can be computed later. How to attribute it to the system (a comparison group or before/after) is decided at go-live. | Confirm OB-5 returns outcomes per archetype from logged data | P, U§2 | Should |
 | EV-6 | Every evaluation report shows the precision, recall, coverage, autonomous rate and outcome for each of the 4 archetypes, with n. None is dropped for small n. | Report inspection: 4 of 4 archetypes × 5 metrics present | Builder request; OB-5 | Must |
 | EV-7 | Re-running the evaluation on the same data snapshot, code version and seed gives identical metrics (difference 0), so improvements between versions are real. Each report stores the version it came from. | Run twice and diff | EV-6 | Must |
 | EV-8 | At least 1 full feedback cycle is shown: outcomes logged in run N change the inputs of run N+1, and the run record names the outcome snapshot it used [src P: a static model is incomplete]. | Demo plus run record query | FR-7.5 | Must |
@@ -300,7 +299,7 @@ If a row below names a library, a component, or a way of meeting a threshold, it
 
 | ID | Requirement | Verified by | Trace | Priority |
 |---|---|---|---|---|
-| CO-1 | LLM spend for a full run stays at or below the ceiling **[tbd: whether existing credit covers LLM calls is unknown (U§8); interim $5 per full run at the interim base size [prop]]**. When the ceiling is reached the run stops and defers the rest (DE-3), with 0 generic fallback sends. | Cost accounting in the run record against the ceiling | GC-4 | Must |
+| CO-1 | LLM spend is uncapped in the build [src builder, 2026-10-17]: correctness first, cost optimization afterwards. 100% of runs record LLM calls, tokens and cost, so optimization can start from real figures. | Query the run table over 5 test runs: all 3 fields present | GC-4 | Should |
 
 ### 3.10 Scalability (SC-)
 
@@ -379,8 +378,7 @@ Every **[prop]** and **[tbd]** number. Status is *proposed* until reviewed; afte
 | CP-3 | 0 direct identifiers in prompts | Prompts are logged and third-party | proposed |
 | CP-4 | [tbd] | Consent rule unknown | pending decision |
 | CT-1 | 5 bad configs | Covers the safety-relevant values | proposed |
-| EV-5 | 10% holdout; [tbd] measured reduction | Below the 15% coverage margin; needs 90 live days | proposed / pending data |
-| CO-1 | [tbd] interim $5 per run | Credit unknown | pending decision |
+| CO-1 | LLM spend is uncapped in the build [src builder, 2026-10-17]: correctness first, cost optimization afterwards. 100% of runs record LLM calls, tokens and cost, so optimization can start from real figures. | Query the run table over 5 test runs: all 3 fields present | GC-4 | Should |
 | SC-2 | ≤ 2.2× time for 2× base | Allows 10% overhead on linear growth | proposed |
 | DP-1 | ≤ 1 hour | One person, clean install | proposed |
 | DP-2 | 3 runs | A week-long test is outside the build window | proposed |
@@ -390,7 +388,7 @@ Every **[prop]** and **[tbd]** number. Status is *proposed* until reviewed; afte
 2. **Churn definition.** Cancel, skip streak, or no order in N days? It decides the labels for EV-1 and EV-2.
 3. **Which actions the system can execute.** Whether Klaviyo sends, offer creation, cadence changes and blend changes can be run from here is unknown (H). Until then DE-6 holds and Assumption 4 applies.
 4. **Email consent.** The PRD sets no unsubscribe or consent rule; CP-4 is a placeholder. The builder decides whether to enforce one.
-5. **LLM credit.** Whether existing credit covers LLM calls sets CO-1 and which provider is usable.
+5. **LLM provider.** LLM spend is uncapped (builder, 2026-10-17); the provider is chosen on quality in the stack step.
 6. **Active base size.** Sets PF-3, SC-1 and SC-2.
 7. **Life-change signal.** If support text carries none, FR-4 reduces to generic escalation (H).
 8. **The 70% autonomy target.** If approval-gated actions exceed 30% of dispatched actions, the target fails by design (Key decision 3). Measure the mix early.
